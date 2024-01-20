@@ -7,6 +7,10 @@ const reservationSchema = new Schema({
         ref : 'users',
         required : true
     },
+    Hotel : {
+        type : Schema.Types.ObjectId,
+        required : true
+    },
     roomNumber : {
         type : String,
         required : true,
@@ -19,7 +23,7 @@ const reservationSchema = new Schema({
         type  : String,
         required : true
     }
-})
+});
 
 
 const reservation  = model("Reservations", reservationSchema);
