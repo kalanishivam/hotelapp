@@ -102,3 +102,38 @@ export const forgetPassword  = async (req, res)=>{
         console.log(`error in forget password : ${error.message}`)
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+export const deleteAccount = async(req, res)=>{
+    try{
+        const {email, password} = req.body;
+        const userDetail = await users.findOne({email});
+        if(!userDetail){
+            return res.status(403).json({error : "NO SUCH ACCOUNT FOUND"})
+        }else{
+        const passwordComapre = bcrypt.compare(password , userDetail.password);
+        if(!passwordComapre){
+            return res.status.json({error : "INVALID USER CREDETIANLS"});
+        }else{
+            const result = await  users.deleteOne({email});
+            if(result.deletedCount == 1){
+                return res.status(200).json({message : "ACCOUNT DELETED SUCCESSFULLY"})
+            }else{
+                return res.status(500).json({error : "ERROR IN DELETING ACCOUNT"})
+            }
+        }
+        }
+    }catch(error){
+        console.log(`error in delete account : ${error.message}`)
+        res.status(500).json({error : "INTERNAL SERVER ERROR"})
+    }
+}

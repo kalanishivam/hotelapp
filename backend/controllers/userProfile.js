@@ -35,3 +35,4 @@ export const updateUserDetails = async (req, res)=>{
         res.staus(500).json({error : 'INTERNAL SERVER ERROR '})
     }
 }
+
