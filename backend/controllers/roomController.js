@@ -29,7 +29,10 @@ export const bookRoom = async(req , res)=>{
         const roomDetails = await rooms.findOne({$and : [{'hotel.name' : hotelName}, {roomNumber : roomNumber}]});
         if(roomDetails.isAvailable){
             await roomDetails.updateOne({_id : roomDetails._id},{ $set : {isAvailable : false, bookeduser : userDetails._id}});
-           const updatedRoom = rooms.findById(roomDetails._id).populate('bookeduser')
+           const updatedRoom = rooms.findById(roomDetails._id).populate({
+            path : 'bookeduser',
+            select : '-passwordResetToken -passwordResetTokenExpire -password'
+           })
             return res.status(200).json({message : "ROOM BOOKED SUCCESSFULLY"})
         }else{  
             return res.status(404).json({error : "ROOM NOT AVAILABLE"})
