@@ -1,6 +1,7 @@
 import users from "../models/users.js";
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { sendEmail } from "../utils/emailHandles.js";
 const jwt_secret = "samplesecret";
 
@@ -79,7 +80,8 @@ export const forgetPassword  = async (req, res)=>{
         if(!existingUser){
             return res.status(400).json({error : "NO SUCH USER EXIST! PLEASE CREATE AN ACCOUNT BEFORE TRYING TO SIGN IN"})
         }else{
-            const resetToken = existingUser.createResetToken();
+            const resetToken = existingUser.createResetPasswordToken();
+            // await existingUser.save();
             const resetURL = `${req.protocol}://${req.get('host')}/api/resetpassword/${resetToken}`
             const message = `please click the link to reset the password. Link is valid for only 10 minutes \n\n. ${message}`
             await existingUser.save({validateBeforeSave : false});
@@ -103,6 +105,33 @@ export const forgetPassword  = async (req, res)=>{
     }
 }
 
+export const resetPassword = async(req, res)=>{
+    try{
+        const { password , confirmPassword} = req.body;
+        const token =  crypto.createHash('sha256').update(req.params.token).digest('hex')
+        const user = await users.findOne({passwordResetToken : token, passwordResetTokenExpire : {$gt : Date.now()}});
+        if(!user){
+            return res.status(403).json({error : "CANNOT RESET PASSWORD! PLEASE TRY AGAIN"})
+        }else{
+            if(password !== confirmPassword){
+                return res.status(400).json({error : "PASSWORDS DO NOT MATCH"})
+            }
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(password , salt);
+            user.password = hashedPassword;
+            user.passwordResetToken = undefined;
+            user.passwordResetTokenExpire = undefined;
+
+            user.save();
+
+        }
+
+
+    }catch(error){
+        console.log(`error in reset password  : ${error.message}`)
+        return res.status(500).json({error : " INTERNAL SERVER ERROR"})
+    }
+}
 
 
 
