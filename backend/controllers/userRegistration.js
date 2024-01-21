@@ -31,8 +31,8 @@ export const handleSignup = async (req, res) => {
                 }
             }
             const authToken = jwt.sign(paylaod, jwt_secret);
-
-            return res.status(201).json({ authToken: authToken, user: paylaod })
+            res.cookie('authToken' , authToken , {httpOnly : true})        //httponly makes sure the cookie cannot be modified or accessed in any way by the browser
+            return res.status(201).json({ user: paylaod })
         } else {
             return res.status(400).json({ error: "USER ALREADY EXIST. PLEASE LOGIN" })
         }
@@ -63,7 +63,8 @@ export const handleLogin = async (req, res) => {
                     }
                 }
                 const authToken = jwt.sign(paylaod, jwt_secret);
-                return res.status(201).json({ authToken: authToken, user: paylaod })
+                res.cookie('authToken' , authToken , {httpOnly : true})
+                return res.status(201).json({ user: paylaod })
             }
         }
     } catch (error) {
@@ -147,10 +148,9 @@ export const updatePassword = async (req, res) => {
             if (password !== confirmPassword) {
                 return res.status(400).json({ message: "PASSWORD AND CONFIRM PASSWORD DO NOT MATCH" });
             } 
-                const salt = bcrypt.genSalt(10);
-                const hashedPassword = bcrypt.hash(password, salt);
-                user.password = hashedPassword;
-                user.save();
+                const salt = await bcrypt.genSalt(10);
+                const hashedPassword = await bcrypt.hash(password, salt);
+                await users.updateOne({email : email} , {$set : {password : hashedPassword}});
                 return res.status(200).json({ message: "PASSWORD CHANGES SUCCESSFULLY" })
             
         }

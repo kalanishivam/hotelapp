@@ -21,6 +21,11 @@ const userSchema = new Schema({
     phone : {
         type : Number,
     },
+    role : {
+        type : String,
+        enum : ['admin' , 'user'],
+        default : 'user',
+    },
     passwordResetToken : String,
     passwordResetTokenExpire : Date
 
